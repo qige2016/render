@@ -1,0 +1,20 @@
+{
+  "name": "h",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "start": "parcel index.html --open",
+    "build": "parcel build index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qige2016/h.git"
+  },
+  "author": "qige2016<286882998@qq.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.12.3",
+    "parcel": "^1.12.4"
+  }
+}
