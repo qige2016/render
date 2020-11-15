@@ -8,6 +8,10 @@ export function h(tag, data = null, children = null) {
   let flags = null
   if (typeof tag === 'string') {
     flags = tag === 'svg' ? VNodeFlags.ELEMENT_SVG : VNodeFlags.ELEMENT_HTML
+    // 序列化 class
+    if (data) {
+      data.class = normalizeClass(data.class)
+    }
   } else if (tag === Fragment) {
     flags = VNodeFlags.FRAGMENT
   } else if (tag === Portal) {
@@ -81,6 +85,25 @@ function normalizeVNodes(children) {
   }
   // 返回新的children，此时 children 的类型就是 ChildrenFlags.KEYED_VNODES
   return newChildren
+}
+
+function normalizeClass(classValue) {
+  // res 是最终要返回的类名字符串
+  let res = ''
+  if (typeof classValue === 'string') {
+    res = classValue
+  } else if (Array.isArray(classValue)) {
+    for (let i = 0; i < classValue.length; i++) {
+      res += normalizeClass(classValue[i]) + ' '
+    }
+  } else if (typeof classValue === 'object') {
+    for (const name in classValue) {
+      if (classValue[name]) {
+        res += name + ' '
+      }
+    }
+  }
+  return res.trim()
 }
 
 function createTextVNode(text) {
