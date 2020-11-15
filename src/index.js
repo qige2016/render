@@ -1,11 +1,17 @@
 import { h } from './h'
 import render from './render'
 
-const elementVnode = h('input', {
-  class: 'cls-a',
-  type: 'checkbox',
-  checked: true,
-  custom: '1'
+function handler() {
+  alert('click me')
+}
+
+const elementVnode = h('div', {
+  style: {
+    width: '100px',
+    height: '100px',
+    backgroundColor: 'red'
+  },
+  onclick: handler
 })
 
 render(elementVnode, document.getElementById('app'))
