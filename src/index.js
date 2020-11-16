@@ -1,17 +1,19 @@
-import { h } from './h'
+import { h, Fragment } from './h'
 import render from './render'
 
-function handler() {
-  alert('click me')
-}
-
-const elementVnode = h('div', {
-  style: {
-    width: '100px',
-    height: '100px',
-    backgroundColor: 'red'
+const elementVNode = h(
+  'div',
+  {
+    style: {
+      height: '100px',
+      width: '100px',
+      background: 'red'
+    }
   },
-  onclick: handler
-})
+  h(Fragment, null, [
+    h('span', null, '我是标题1......'),
+    h('span', null, '我是标题2......')
+  ])
+)
 
-render(elementVnode, document.getElementById('app'))
+render(elementVNode, document.getElementById('app'))
