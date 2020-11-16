@@ -45,12 +45,12 @@ function mount(vnode, container, isSVG) {
   }
 }
 
-const domPropsRE = /\W|^(?:value|checked|selected|muted)$/
 function mountElement(vnode, container, isSVG) {
   isSVG = isSVG || vnode.flags & VNodeFlags.ELEMENT_SVG
   const el = isSVG
     ? document.createElementNS('http://www.w3.org/2000/svg', vnode.tag)
     : document.createElement(vnode.tag)
+  // VNode 被渲染为真实DOM之后，且引用真实DOM元素
   vnode.el = el
   const data = vnode.data
   if (data) {
@@ -59,13 +59,20 @@ function mountElement(vnode, container, isSVG) {
     }
   }
 
+  // 拿到 children 和 childFlags
   const childFlags = vnode.childFlags
   const children = vnode.children
+  // 检测如果没有子节点则无需递归挂载
   if (childFlags !== ChildrenFlags.NO_CHILDREN) {
     if (childFlags & ChildrenFlags.SINGLE_VNODE) {
+      // 如果是单个子节点则调用 mount 函数挂载
+      // 因为 svg 的书写总是以 <svg> 标签开始的，所有其他 svg 相关的标签都是 <svg> 标签的子代元素
+      // 这里需要把 isSVG 传递下去
       mount(children, el, isSVG)
     } else if (childFlags & ChildrenFlags.MULTIPLE_VNODES) {
+      // 如果是单多个子节点则遍历并调用 mount 函数挂载
       for (let i = 0; i < children.length; i++) {
+        // 这里需要把 isSVG 传递下去
         mount(children[i], el, isSVG)
       }
     }
@@ -168,6 +175,7 @@ function mountStatefulComponent(vnode, container, isSVG) {
 }
 
 function mountFunctionalComponent(vnode, container, isSVG) {
+  // 在函数式组件类型的 vnode 上添加 handle 属性，它是一个对象
   vnode.handle = {
     prev: null,
     next: vnode,
@@ -203,9 +211,12 @@ function mountFunctionalComponent(vnode, container, isSVG) {
 }
 
 function patch(prevVNode, nextVNode, container) {
+  // 分别拿到新旧 VNode 的类型，即 flags
   const nextFlags = nextVNode.flags
   const prevFlags = prevVNode.flags
 
+  // 检查新旧 VNode 的类型是否相同，如果类型不同，则直接调用 replaceVNode 函数替换 VNode
+  // 如果新旧 VNode 的类型相同，则根据不同的类型调用不同的比对函数
   if (prevFlags !== nextFlags) {
     replaceVNode(prevVNode, nextVNode, container)
   } else if (nextFlags & VNodeFlags.ELEMENT) {
@@ -223,7 +234,9 @@ function patch(prevVNode, nextVNode, container) {
 
 function replaceVNode(prevVNode, nextVNode, container) {
   container.removeChild(prevVNode.el)
+  // 如果将要被移除的 VNode 类型是组件，则需要调用该组件实例的 unmounted 钩子函数
   if (prevVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
+    // 类型为有状态组件的 VNode，其 children 属性被用来存储组件实例对象
     const instance = prevVNode.children
     instance.unmounted && instance.unmounted()
   }
@@ -242,17 +255,22 @@ function patchElement(prevVNode, nextVNode, container) {
   const prevData = prevVNode.data
   const nextData = nextVNode.data
 
+  // 新的 VNodeData 存在时才有必要更新
   if (nextData) {
+    // 遍历新的 VNodeData
     for (let key in nextData) {
+      // 根据 key 拿到新旧 VNodeData 值
       const prevValue = prevData[key]
       const nextValue = nextData[key]
       patchData(el, key, prevValue, nextValue)
     }
   }
+  // 遍历旧的 VNodeData，将已经不存在于新的 VNodeData 中的数据移除
   if (prevData) {
     for (let key in prevData) {
       const prevValue = prevData[key]
       if (prevValue && !nextData.hasOwnProperty(key)) {
+        // 第四个参数为 null，代表移除数据
         patchData(el, key, prevValue, null)
       }
     }
@@ -363,12 +381,15 @@ function patchFragment(prevVNode, nextVNode, container) {
 
   switch (nextVNode.childFlags) {
     case ChildrenFlags.SINGLE_VNODE:
+      // 如果新的片段的 children 类型是单个子节点，则意味着其 vnode.children 属性的值就是 VNode 对象
       nextVNode.el = nextVNode.children.el
       break
     case ChildrenFlags.NO_CHILDREN:
+      // 如果新的片段没有子节点，我们知道对于没有子节点的片段我们会使用一个空的文本节点占位，而 prevVNode.el 属性引用的就是该空文本节点
       nextVNode.el = prevVNode.el
       break
     default:
+      // 如果新的片段的类型是多个子节点，则 nextVNode.children 是一个 VNode 数组，我们会让新片段的 nextVNode.el 属性引用数组中的第一个元素
       nextVNode.el = nextVNode.children[0].el
   }
 }
@@ -411,6 +432,7 @@ function patchPortal(prevVNode, nextVNode) {
 }
 
 function patchComponent(prevVNode, nextVNode, container) {
+  // 检查组件是否是有状态组件
   if (nextVNode.tag !== prevVNode.tag) {
     replaceVNode(prevVNode, nextVNode, container)
   } else if (nextVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {

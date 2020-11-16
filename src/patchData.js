@@ -3,9 +3,11 @@ const domPropsRE = /\W|^(?:value|checked|selected|muted)$/
 export function patchData(el, key, prevValue, nextValue) {
   switch (key) {
     case 'style':
+      // 遍历新 VNodeData 中的 style 数据，将新的样式应用到元素
       for (let k in nextValue) {
         el.style[k] = nextValue[k]
       }
+      // 遍历旧 VNodeData 中的 style 数据，将已经不存在于新的 VNodeData 的数据移除
       for (let k in prevValue) {
         if (!nextValue.hasOwnProperty(k)) {
           el.style[k] = ''
