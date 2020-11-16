@@ -1,20 +1,15 @@
 import { h } from './h'
 import render from './render'
 
-function MyFunctionalComponent() {
-  return h(
-    'div',
-    {
-      style: {
-        background: 'green'
-      }
-    },
-    [
-      h('span', null, '我是组件的标题1......'),
-      h('span', null, '我是组件的标题2......')
-    ]
-  )
-}
+const prevVNode = h('div', null, '旧的 VNode')
 
-const compVnode = h(MyFunctionalComponent)
-render(compVnode, document.getElementById('app'))
+class MyComponent {
+  render() {
+    return h('div', null, '新的 VNode')
+  }
+}
+const nextVNode = h(MyComponent)
+
+render(prevVNode, document.getElementById('app'))
+
+render(nextVNode, document.getElementById('app'))

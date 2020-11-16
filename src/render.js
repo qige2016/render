@@ -180,3 +180,27 @@ function mountFunctionalComponent(vnode, container, isSVG) {
   // el 元素引用该组件的根元素
   vnode.el = $vnode.el
 }
+
+function patch(prevVNode, nextVNode, container) {
+  const nextFlags = nextVNode.flags
+  const prevFlags = prevVNode.flags
+
+  if (prevFlags !== nextFlags) {
+    replaceVNode(prevVNode, nextVNode, container)
+  } else if (nextFlags & VNodeFlags.ELEMENT) {
+    patchElement(prevVNode, nextVNode, container)
+  } else if (nextFlags & VNodeFlags.COMPONENT) {
+    patchComponent(prevVNode, nextVNode, container)
+  } else if (nextFlags & VNodeFlags.TEXT) {
+    patchText(prevVNode, nextVNode)
+  } else if (nextFlags & VNodeFlags.FRAGMENT) {
+    patchFragment(prevVNode, nextVNode, container)
+  } else if (nextFlags & VNodeFlags.PORTAL) {
+    patchPortal(prevVNode, nextVNode)
+  }
+}
+
+function replaceVNode(prevVNode, nextVNode, container) {
+  container.removeChild(prevVNode.el)
+  mount(nextVNode, container)
+}
