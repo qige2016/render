@@ -1,13 +1,16 @@
 import { h } from './h'
 import render from './render'
 
+const handler = () => alert('clicked')
+
 // 旧的 VNode
 const prevVNode = h('div', {
   style: {
     width: '100px',
     height: '100px',
     backgroundColor: 'red'
-  }
+  },
+  onclick: handler
 })
 
 // 新的 VNode
