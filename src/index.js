@@ -2,16 +2,10 @@ import { h } from './h'
 import render from './render'
 
 // 旧的 VNode
-const prevVNode = h('div', null, [
-  h('p', null, '旧的子节点1'),
-  h('p', null, '旧的子节点2')
-])
+const prevVNode = h('p', null, '旧文本')
 
 // 新的 VNode
-const nextVNode = h('div', null, [
-  h('p', null, '新的子节点1'),
-  h('p', null, '新的子节点2')
-])
+const nextVNode = h('p', null, '新文本')
 
 render(prevVNode, document.getElementById('app'))
 
