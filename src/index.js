@@ -1,34 +1,28 @@
 import { h } from './h'
 import render from './render'
 
-// 子组件类 1
-class ChildComponent1 {
-  render() {
-    return h('div', null, '子组件 1')
-  }
-}
-// 子组件类 2
-class ChildComponent2 {
-  render() {
-    return h('div', null, '子组件 2')
-  }
+// 子组件 - 函数式组件
+function MyFunctionalComp(props) {
+  return h('div', null, props.text)
 }
 // 父组件类
 class ParentComponent {
-  isTrue = true
+  localState = 'one'
 
   mounted() {
     setTimeout(() => {
-      this.isTrue = false
+      this.localState = 'two'
       this._update()
     }, 2000)
   }
 
   render() {
-    return this.isTrue ? h(ChildComponent1) : h(ChildComponent2)
+    return h(MyFunctionalComp, {
+      text: this.localState
+    })
   }
 }
+
 // 有状态组件 VNode
 const compVNode = h(ParentComponent)
-
 render(compVNode, document.getElementById('app'))
