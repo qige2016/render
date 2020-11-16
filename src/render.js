@@ -171,3 +171,12 @@ function mountStatefulComponent(vnode, container, isSVG) {
   // el 属性值 和 组件实例的 $el 属性都引用组件的根DOM元素
   instance.$el = vnode.el = instance.$vnode.el
 }
+
+function mountFunctionalComponent(vnode, container, isSVG) {
+  // 获取 VNode
+  const $vnode = vnode.tag()
+  // 挂载
+  mount($vnode, container, isSVG)
+  // el 元素引用该组件的根元素
+  vnode.el = $vnode.el
+}
