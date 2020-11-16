@@ -204,3 +204,37 @@ function replaceVNode(prevVNode, nextVNode, container) {
   container.removeChild(prevVNode.el)
   mount(nextVNode, container)
 }
+
+function patchElement(prevVNode, nextVNode, container) {
+  // 如果新旧 VNode 描述的是不同的标签，则调用 replaceVNode 函数使用新的 VNode 替换旧的 VNode
+  if (prevVNode.tag !== nextVNode.tag) {
+    replaceVNode(prevVNode, nextVNode, container)
+    return
+  }
+
+  // 拿到 el 元素，注意这时要让 nextVNode.el 也引用该元素
+  const el = (nextVNode.el = prevVNode.el)
+  const prevData = prevVNode.data
+  const nextData = nextVNode.data
+
+  if (nextData) {
+    for (let key in nextData) {
+      const prevValue = prevData[key]
+      const nextValue = nextData[key]
+      switch (key) {
+        case 'style':
+          for (let k in nextValue) {
+            el.style[k] = nextValue[k]
+          }
+          for (let k in prevValue) {
+            if (!nextValue.hasOwnProperty(k)) {
+              el.style[k] = ''
+            }
+          }
+          break
+        default:
+          break
+      }
+    }
+  }
+}
