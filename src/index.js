@@ -1,23 +1,22 @@
-import { h, Portal } from './h'
+import { h } from './h'
 import render from './render'
 
-// 旧的 VNode
-const prevVNode = h(
-  Portal,
-  { target: '#old-container' },
-  h('p', null, '旧的 Portal')
-)
+// 组件类
+class MyComponent {
+  localState = 'one'
 
-// 新的 VNode
-const nextVNode = h(
-  Portal,
-  { target: '#new-container' },
-  h('p', null, '新的 Portal')
-)
+  mounted() {
+    setTimeout(() => {
+      this.localState = 'two'
+      this._update()
+    }, 2000)
+  }
 
-render(prevVNode, document.getElementById('app'))
+  render() {
+    return h('div', null, this.localState)
+  }
+}
+// 有状态组件 VNode
+const compVNode = h(MyComponent)
 
-// 2秒后更新
-setTimeout(() => {
-  render(nextVNode, document.getElementById('app'))
-}, 2000)
+render(compVNode, document.getElementById('app'))

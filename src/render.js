@@ -136,10 +136,33 @@ function mountComponent(vnode, container, isSVG) {
 function mountStatefulComponent(vnode, container, isSVG) {
   // 创建组件实例
   const instance = new vnode.tag()
-  // 渲染VNode
-  instance.$vnode = instance.render()
-  // 挂载
-  mount(instance.$vnode, container, isSVG)
+
+  instance._update = function() {
+    if (instance._mounted) {
+      // 更新
+      // 1、拿到旧的 VNode
+      const prevVNode = instance.$vnode
+      // 2、重渲染新的 VNode
+      const nextVNode = (instance.$vnode = instance.render())
+      // 3、patch 更新
+      patch(prevVNode, nextVNode, prevVNode.el.parentNode)
+      // 4、更新 vnode.el 和 $el
+      instance.$el = vnode.el = instance.$vnode.el
+    } else {
+      // 1、渲染VNode
+      instance.$vnode = instance.render()
+      // 2、挂载
+      mount(instance.$vnode, container, isSVG)
+      // 3、组件已挂载的标识
+      instance._mounted = true
+      // 4、el 属性值 和 组件实例的 $el 属性都引用组件的根DOM元素
+      instance.$el = vnode.el = instance.$vnode.el
+      // 5、调用 mounted 钩子
+      instance.mounted && instance.mounted()
+    }
+  }
+
+  instance._update()
 }
 
 function patch(prevVNode, nextVNode, container) {
