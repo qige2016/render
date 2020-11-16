@@ -1,19 +1,22 @@
-import { h, Portal } from './h'
+import { h } from './h'
 import render from './render'
 
-const elementVNode = h(
-  'div',
-  {
-    style: {
-      height: '100px',
-      width: '100px',
-      background: 'red'
-    }
-  },
-  h(Portal, { target: '#portal-box' }, [
-    h('span', null, '我是标题1......'),
-    h('span', null, '我是标题2......')
-  ])
-)
+class MyComponent {
+  render() {
+    return h(
+      'div',
+      {
+        style: {
+          background: 'green'
+        }
+      },
+      [
+        h('span', null, '我是组件的标题1......'),
+        h('span', null, '我是组件的标题2......')
+      ]
+    )
+  }
+}
 
-render(elementVNode, document.getElementById('app'))
+const compVnode = h(MyComponent)
+render(compVnode, document.getElementById('app'))
