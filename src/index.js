@@ -11,6 +11,13 @@ class ChildComponent {
 class ParentComponent {
   localState = 'one'
 
+  mounted() {
+    setTimeout(() => {
+      this.localState = 'two'
+      this._update()
+    }, 2000)
+  }
+
   render() {
     return h(ChildComponent, {
       text: this.localState
