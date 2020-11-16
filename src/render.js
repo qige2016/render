@@ -1,4 +1,5 @@
 import { VNodeFlags, ChildrenFlags } from './flags'
+import { createTextVNode } from './h'
 
 export default function render(vnode, container) {
   const prevVNode = container.vnode

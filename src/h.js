@@ -106,7 +106,7 @@ function normalizeClass(classValue) {
   return res.trim()
 }
 
-function createTextVNode(text) {
+export function createTextVNode(text) {
   return {
     _isVNode: true,
     // flags 是 VNodeFlags.TEXT
