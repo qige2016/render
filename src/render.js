@@ -136,6 +136,8 @@ function mountComponent(vnode, container, isSVG) {
 function mountStatefulComponent(vnode, container, isSVG) {
   // 创建组件实例
   const instance = new vnode.tag()
+  // 初始化 props
+  instance.$props = vnode.data
 
   instance._update = function() {
     if (instance._mounted) {
@@ -157,8 +159,6 @@ function mountStatefulComponent(vnode, container, isSVG) {
       instance._mounted = true
       // 4、el 属性值 和 组件实例的 $el 属性都引用组件的根DOM元素
       instance.$el = vnode.el = instance.$vnode.el
-      // 5、调用 mounted 钩子
-      instance.mounted && instance.mounted()
     }
   }
 
@@ -186,6 +186,11 @@ function patch(prevVNode, nextVNode, container) {
 
 function replaceVNode(prevVNode, nextVNode, container) {
   container.removeChild(prevVNode.el)
+  if (prevVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
+    const instance = prevVNode.children
+    console.log(instance)
+    instance.unmounted && instance.unmounted()
+  }
   mount(nextVNode, container)
 }
 
