@@ -1,26 +1,17 @@
 import { h } from './h'
 import render from './render'
 
-const handler = () => alert('clicked')
-
 // 旧的 VNode
-const prevVNode = h('div', {
-  style: {
-    width: '100px',
-    height: '100px',
-    backgroundColor: 'red'
-  },
-  onclick: handler
-})
+const prevVNode = h('div', null, [
+  h('p', null, '旧的子节点1'),
+  h('p', null, '旧的子节点2')
+])
 
 // 新的 VNode
-const nextVNode = h('div', {
-  style: {
-    width: '100px',
-    height: '100px',
-    border: '1px solid green'
-  }
-})
+const nextVNode = h('div', null, [
+  h('p', null, '新的子节点1'),
+  h('p', null, '新的子节点2')
+])
 
 render(prevVNode, document.getElementById('app'))
 

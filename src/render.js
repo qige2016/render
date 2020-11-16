@@ -168,4 +168,87 @@ function patchElement(prevVNode, nextVNode, container) {
       }
     }
   }
+
+  // 调用 patchChildren 函数递归的更新子节点
+  patchChildren(
+    prevVNode.childFlags, // 旧的 VNode 子节点的类型
+    nextVNode.childFlags, // 新的 VNode 子节点的类型
+    prevVNode.children, // 旧的 VNode 子节点
+    nextVNode.children, // 新的 VNode 子节点
+    el // 当前标签元素，即这些子节点的父节点
+  )
+}
+
+function patchChildren(
+  prevChildFlags,
+  nextChildFlags,
+  prevChildren,
+  nextChildren,
+  container
+) {
+  switch (prevChildFlags) {
+    // 旧的 children 是单个子节点，会执行该 case 语句块
+    case ChildrenFlags.SINGLE_VNODE:
+      switch (nextChildFlags) {
+        case ChildrenFlags.SINGLE_VNODE:
+          // 新的 children 也是单个子节点时，会执行该 case 语句块
+          patch(prevChildren, nextChildren, container)
+          break
+        case ChildrenFlags.NO_CHILDREN:
+          // 新的 children 中没有子节点时，会执行该 case 语句块
+          container.removeChild(prevChildren.el)
+          break
+        default:
+          // 但新的 children 中有多个子节点时，会执行该 case 语句块
+          container.removeChild(prevChildren.el)
+          for (let i = 0; i < nextChildren.length; i++) {
+            mount(nextChildren[i], container)
+          }
+          break
+      }
+      break
+    // 旧的 children 中没有子节点时，会执行该 case 语句块
+    case ChildrenFlags.NO_CHILDREN:
+      switch (nextChildFlags) {
+        case ChildrenFlags.SINGLE_VNODE:
+          // 新的 children 是单个子节点时，会执行该 case 语句块
+          mount(nextChildren, container)
+          break
+        case ChildrenFlags.NO_CHILDREN:
+          // 新的 children 中没有子节点时，会执行该 case 语句块
+          break
+        default:
+          // 但新的 children 中有多个子节点时，会执行该 case 语句块
+          for (let i = 0; i < nextChildren.length; i++) {
+            mount(nextChildren[i], container)
+          }
+          break
+      }
+      break
+    // 旧的 children 中有多个子节点时，会执行该 case 语句块
+    default:
+      switch (nextChildFlags) {
+        case ChildrenFlags.SINGLE_VNODE:
+          for (let i = 0; i < prevChildren.length; i++) {
+            container.removeChild(prevChildren[i].el)
+          }
+          mount(nextChildren, container)
+          break
+        case ChildrenFlags.NO_CHILDREN:
+          for (let i = 0; i < prevChildren.length; i++) {
+            container.removeChild(prevChildren[i].el)
+          }
+          break
+        default:
+          // 但新的 children 中有多个子节点时，会执行该 case 语句块
+          for (let i = 0; i < prevChildren.length; i++) {
+            container.removeChild(prevChildren[i].el)
+          }
+          for (let i = 0; i < nextChildren.length; i++) {
+            mount(nextChildren[i], container)
+          }
+          break
+      }
+      break
+  }
 }
