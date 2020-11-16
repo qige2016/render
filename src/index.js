@@ -1,27 +1,31 @@
 import { h } from './h'
 import render from './render'
 
-// 子组件类
-class ChildComponent {
+// 子组件类 1
+class ChildComponent1 {
   render() {
-    return h('div', null, this.$props.text)
+    return h('div', null, '子组件 1')
+  }
+}
+// 子组件类 2
+class ChildComponent2 {
+  render() {
+    return h('div', null, '子组件 2')
   }
 }
 // 父组件类
 class ParentComponent {
-  localState = 'one'
+  isTrue = true
 
   mounted() {
     setTimeout(() => {
-      this.localState = 'two'
+      this.isTrue = false
       this._update()
     }, 2000)
   }
 
   render() {
-    return h(ChildComponent, {
-      text: this.localState
-    })
+    return this.isTrue ? h(ChildComponent1) : h(ChildComponent2)
   }
 }
 // 有状态组件 VNode

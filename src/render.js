@@ -190,7 +190,6 @@ function replaceVNode(prevVNode, nextVNode, container) {
   container.removeChild(prevVNode.el)
   if (prevVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
     const instance = prevVNode.children
-    console.log(instance)
     instance.unmounted && instance.unmounted()
   }
   mount(nextVNode, container)
@@ -377,7 +376,9 @@ function patchPortal(prevVNode, nextVNode) {
 }
 
 function patchComponent(prevVNode, nextVNode, container) {
-  if (nextVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
+  if (nextVNode.tag !== prevVNode.tag) {
+    replaceVNode(prevVNode, nextVNode, container)
+  } else if (nextVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
     // 获取组件实例
     const instance = (nextVNode.children = prevVNode.children)
     // 更新 props
