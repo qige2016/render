@@ -1,4 +1,4 @@
-import { h, Fragment } from './h'
+import { h, Portal } from './h'
 import render from './render'
 
 const elementVNode = h(
@@ -10,7 +10,7 @@ const elementVNode = h(
       background: 'red'
     }
   },
-  h(Fragment, null, [
+  h(Portal, { target: '#portal-box' }, [
     h('span', null, '我是标题1......'),
     h('span', null, '我是标题2......')
   ])
