@@ -3,15 +3,16 @@ import render from './render'
 
 // 旧的 VNode
 const prevVNode = h('div', null, [
-  h('p', null, '旧的子节点1'),
-  h('p', null, '旧的子节点2')
+  h('p', { key: 'a' }, '节点1'),
+  h('p', { key: 'b' }, '节点2'),
+  h('p', { key: 'c' }, '节点3')
 ])
 
 // 新的 VNode
 const nextVNode = h('div', null, [
-  h('p', null, '新的子节点1'),
-  h('p', null, '新的子节点2'),
-  h('p', null, '新的子节点3')
+  h('p', { key: 'c' }, '节点3'),
+  h('p', { key: 'a' }, '节点1'),
+  h('p', { key: 'b' }, '节点2')
 ])
 
 render(prevVNode, document.getElementById('app'))
