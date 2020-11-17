@@ -386,6 +386,18 @@ function patchChildren(
                   : nextChildren[i - 1].el.nextSibling
               mount(nextVNode, container, false, refNode)
             }
+            // 移除已经不存在的节点
+            for (let i = 0; i < prevChildren.length; i++) {
+              const prevVNode = prevChildren[i]
+              // 拿着旧 VNode 去新 children 中寻找相同的节点
+              const has = nextChildren.find(
+                nextVNode => nextVNode.key === prevVNode.key
+              )
+              if (!has) {
+                // 如果没有找到相同的节点，则移除
+                container.removeChild(prevVNode.el)
+              }
+            }
           }
           break
       }
