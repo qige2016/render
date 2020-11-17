@@ -398,9 +398,19 @@ function patchChildren(
                 prevChildren[idxInOld] = undefined
                  // 把 vnodeToMove.el 移动到最前面，即 oldStartVNode.el 的前面
                 container.insertBefore(vnodeToMove.el, oldStartVNode.el)
+              } else {
+                // 使用 mount 函数挂载新节点
+                mount(newStartVNode, container, false, oldStartVNode.el)
               }
               // 将 newStartIdx 下移一位
               newStartVNode = nextChildren[++newStartIdx]
+            }
+          }
+          // 在循环结束之后 oldEndIdx 的值小于 oldStartIdx 的值则说明新的 children 中存在还没有被处理的全新节点
+          if (oldEndIdx < oldStartIdx) {
+            // 添加新节点
+            for (let i = newStartIdx; i <= newEndIdx; i++) {
+              mount(nextChildren[i], container, false, oldStartVNode.el)
             }
           }
           break
