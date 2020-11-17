@@ -25,11 +25,11 @@ export default function render(vnode, container) {
   }
 }
 
-function mount(vnode, container, isSVG) {
+function mount(vnode, container, isSVG, refNode) {
   const { flags } = vnode
   if (flags & VNodeFlags.ELEMENT) {
     // 挂载普通标签
-    mountElement(vnode, container, isSVG)
+    mountElement(vnode, container, isSVG, refNode)
   } else if (flags & VNodeFlags.COMPONENT) {
     // 挂载组件
     mountComponent(vnode, container, isSVG)
@@ -45,7 +45,7 @@ function mount(vnode, container, isSVG) {
   }
 }
 
-function mountElement(vnode, container, isSVG) {
+function mountElement(vnode, container, isSVG, refNode) {
   isSVG = isSVG || vnode.flags & VNodeFlags.ELEMENT_SVG
   const el = isSVG
     ? document.createElementNS('http://www.w3.org/2000/svg', vnode.tag)
@@ -78,7 +78,7 @@ function mountElement(vnode, container, isSVG) {
     }
   }
 
-  container.appendChild(el)
+  refNode ? container.insertBefore(el, refNode) : container.appendChild(el)
 }
 
 function mountText(vnode, container) {
@@ -353,12 +353,15 @@ function patchChildren(
           // 遍历新的 children
           for (let i = 0; i < nextChildren.length; i++) {
             const nextVNode = nextChildren[i]
-            let j = 0
+            let j = 0,
+            // 新 children 中的节点是否存在于旧 children 中
+            find = false
             // 遍历旧的 children
             for (j; j < prevChildren.length; j++) {
               const prevVNode = prevChildren[j]
               // 如果找到了具有相同 key 值的两个节点，则调用 `patch` 函数更新之
               if (nextVNode.key === prevVNode.key) {
+                find = true
                 patch(prevVNode, nextVNode, container)
                 if (j < lastIndex) {
                   // 需要移动
@@ -372,6 +375,16 @@ function patchChildren(
                   lastIndex = j
                 }
               }
+            }
+            if (!find) {
+              // 挂载新节点
+              // 找到 refNode
+              const refNode =
+                i - 1 < 0
+                  // 新的节点是作为第一个节点,只需要把新的节点插入到最前面即可
+                  ? prevChildren[0].el
+                  : nextChildren[i - 1].el.nextSibling
+              mount(nextVNode, container, false, refNode)
             }
           }
           break
