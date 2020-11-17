@@ -347,76 +347,59 @@ function patchChildren(
           }
           break
         default:
-          // 但新的 children 中有多个子节点时，会执行该 case 语句块
-          let oldStartIdx = 0
-          let oldEndIdx = prevChildren.length - 1
-          let newStartIdx = 0
-          let newEndIdx = nextChildren.length - 1
-          let oldStartVNode = prevChildren[oldStartIdx]
-          let oldEndVNode = prevChildren[oldEndIdx]
-          let newStartVNode = nextChildren[newStartIdx]
-          let newEndVNode = nextChildren[newEndIdx]
+          // 更新相同的前缀节点
+          // j 为指向新旧 children 中第一个节点的索引
+          let j = 0
+          let prevVNode = prevChildren[j]
+          let nextVNode = nextChildren[j]
+          let prevEnd = prevChildren.length - 1
+          let nextEnd = nextChildren.length - 1
 
-          while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-            // 当 oldStartVNode 或 oldEndVNode 不存在时，说明该节点已经被移动了，我们只需要跳过该位置即可
-            if (!oldStartVNode) {
-              oldStartVNode = prevChildren[++oldStartIdx]
-            } else if (!oldEndVNode) {
-              oldEndVNode = prevChildren[--oldEndIdx]
-            } else if (oldStartVNode.key === newStartVNode.key) {
-              patch(oldStartVNode, newStartVNode, container)
-              oldStartVNode = prevChildren[++oldStartIdx]
-              newStartVNode = nextChildren[++newStartIdx]
-            } else if (oldEndVNode.key === newEndVNode.key) {
-              patch(oldEndVNode, newEndVNode, container)
-              oldEndVNode = prevChildren[--oldEndIdx]
-              newEndVNode = nextChildren[--newEndIdx]
-            } else if (oldStartVNode.key === newEndVNode.key) {
-              patch(oldStartVNode, newEndVNode, container)
-              container.insertBefore(
-                oldStartVNode.el,
-                oldEndVNode.el.nextSibling
-              )
-              oldStartVNode = prevChildren[++oldStartIdx]
-              newEndVNode = nextChildren[--newEndIdx]
-            } else if (oldEndVNode.key === newStartVNode.key) {
-              patch(oldEndVNode, newStartVNode, container)
-              container.insertBefore(oldEndVNode.el, oldStartVNode.el)
-              oldEndVNode = prevChildren[--oldEndIdx]
-              newStartVNode = nextChildren[++newStartIdx]
-            } else {
-              // 遍历旧 children，试图寻找与 newStartVNode 拥有相同 key 值的元素
-              const idxInOld = prevChildren.findIndex(
-                node => node.key === newStartVNode.key
-              )
-              if (idxInOld >= 0) {
-                // vnodeToMove 就是在旧 children 中找到的节点，该节点所对应的真实 DOM 应该被移动到最前面
-                const vnodeToMove = prevChildren[idxInOld]
-                // 调用 patch 函数完成更新
-                patch(vnodeToMove, newStartVNode, container)
-                // 由于旧 children 中该位置的节点所对应的真实 DOM 已经被移动，所以将其设置为 undefined
-                prevChildren[idxInOld] = undefined
-                 // 把 vnodeToMove.el 移动到最前面，即 oldStartVNode.el 的前面
-                container.insertBefore(vnodeToMove.el, oldStartVNode.el)
-              } else {
-                // 使用 mount 函数挂载新节点
-                mount(newStartVNode, container, false, oldStartVNode.el)
+          outer: {
+            // while 循环向后遍历，直到遇到拥有不同 key 值的节点为止
+            while (prevVNode.key === nextVNode.key) {
+              // 调用 patch 函数更新
+              patch(prevVNode, nextVNode, container)
+              j++
+              if (j > prevEnd || j > nextEnd) {
+                break outer
               }
-              // 将 newStartIdx 下移一位
-              newStartVNode = nextChildren[++newStartIdx]
+              prevVNode = prevChildren[j]
+              nextVNode = nextChildren[j]
+            }
+            // 更新相同的后缀节点
+            prevVNode = prevChildren[prevEnd]
+            nextVNode = nextChildren[nextEnd]
+            // while 循环向前遍历，直到遇到拥有不同 key 值的节点为止
+            while (prevVNode.key === nextVNode.key) {
+              // 调用 patch 函数更新
+              patch(prevVNode, nextVNode, container)
+              prevEnd--
+              nextEnd--
+              // j 大于 prevEnd 则说明旧 children 中的所有节点都已经参与了 patch; j 大于 nextEnd 则说明新 children 中的所有节点都已经参与了 patch
+              if (j > prevEnd || j > nextEnd) {
+                break outer
+              }
+              prevVNode = prevChildren[prevEnd]
+              nextVNode = nextChildren[nextEnd]
             }
           }
-          // 在循环结束之后 oldEndIdx 的值小于 oldStartIdx 的值则说明新的 children 中存在还没有被处理的全新节点
-          if (oldEndIdx < oldStartIdx) {
-            // 添加新节点
-            for (let i = newStartIdx; i <= newEndIdx; i++) {
-              mount(nextChildren[i], container, false, oldStartVNode.el)
+
+          // 满足条件，则说明从 j -> nextEnd 之间的节点应作为新节点插入
+          if (j > prevEnd && j <= nextEnd) {
+            // j -> nextEnd 之间的节点应该被添加
+            // 所有新节点应该插入到位于 nextPos 位置的节点的前面
+            const nextPos = nextEnd + 1
+            const refNode =
+              nextPos < nextChildren.length ? nextChildren[nextPos].el : null
+            // 采用 while 循环，调用 mount 函数挂载节点
+            while (j <= nextEnd) {
+              mount(nextChildren[j++], container, false, refNode)
             }
-          // 循环结束后，一旦满足条件 newEndIdx < newStartId 则说明有元素需要被移除
-          } else if (newEndIdx < newStartIdx) {
-            // 移除操作
-            for (let i = oldStartIdx; i <= oldEndIdx; i++) {
-              container.removeChild(prevChildren[i].el)
+          } else if (j > nextEnd) {
+            // j -> prevEnd 之间的节点应该被移除
+            while (j <= prevEnd) {
+              container.removeChild(prevChildren[j++].el)
             }
           }
           break
