@@ -412,6 +412,12 @@ function patchChildren(
             for (let i = newStartIdx; i <= newEndIdx; i++) {
               mount(nextChildren[i], container, false, oldStartVNode.el)
             }
+          // 循环结束后，一旦满足条件 newEndIdx < newStartId 则说明有元素需要被移除
+          } else if (newEndIdx < newStartIdx) {
+            // 移除操作
+            for (let i = oldStartIdx; i <= oldEndIdx; i++) {
+              container.removeChild(prevChildren[i].el)
+            }
           }
           break
       }
