@@ -404,6 +404,7 @@ function patchChildren(
           } else {
             // 构造 source 数组
             const nextLeft = nextEnd - j + 1 // 新 children 中剩余未处理节点的数量
+            // source 数组将用来存储新 children 中的节点在旧 children 中的位置，后面将会使用它计算出一个最长递增子序列，并用于 DOM 移动
             const source = []
             for (let i = 0; i < nextLeft; i++) {
               source.push(-1)
@@ -413,10 +414,13 @@ function patchChildren(
             const nextStart = j
             let moved = false
             let pos = 0
+            // 时间复杂度 O(n^2)
             // for (let i = prevStart; i <= prevEnd; i++) {
             //   const prevVNode = prevChildren[i]
+            //   // 遍历新 children
             //   for (let k = nextStart; k <= nextEnd; k++) {
             //     const nextVNode = nextChildren[k]
+            //     // 找到拥有相同 key 值的可复用节点
             //     if (prevVNode.key === nextVNode.key) {
             //       // patch 更新
             //       patch(prevVNode, nextVNode, container)
@@ -432,16 +436,18 @@ function patchChildren(
             //   }
             // }
 
+            // 时间复杂度 O(n)
             // 构建索引表
             const keyIndex = {}
             for (let i = nextStart; i <= nextEnd; i++) {
               keyIndex[nextChildren[i].key] = i
             }
+            // 已经更新过的节点的数量
             let patched = 0
             // 遍历旧 children 的剩余未处理节点
             for (let i = prevStart; i <= prevEnd; i++) {
               prevVNode = prevChildren[i]
-
+              
               if (patched < nextLeft) {
                 // 通过索引表快速找到新 children 中具有相同 key 的节点的位置
                 const k = keyIndex[prevVNode.key]
