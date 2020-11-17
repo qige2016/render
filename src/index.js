@@ -1,28 +1,22 @@
 import { h } from './h'
 import render from './render'
 
-// 子组件 - 函数式组件
-function MyFunctionalComp(props) {
-  return h('div', null, props.text)
-}
-// 父组件类
-class ParentComponent {
-  localState = 'one'
+// 旧的 VNode
+const prevVNode = h('div', null, [
+  h('p', null, '旧的子节点1'),
+  h('p', null, '旧的子节点2')
+])
 
-  mounted() {
-    setTimeout(() => {
-      this.localState = 'two'
-      this._update()
-    }, 2000)
-  }
+// 新的 VNode
+const nextVNode = h('div', null, [
+  h('p', null, '新的子节点1'),
+  h('p', null, '新的子节点2'),
+  h('p', null, '新的子节点3')
+])
 
-  render() {
-    return h(MyFunctionalComp, {
-      text: this.localState
-    })
-  }
-}
+render(prevVNode, document.getElementById('app'))
 
-// 有状态组件 VNode
-const compVNode = h(ParentComponent)
-render(compVNode, document.getElementById('app'))
+// 2秒后更新
+setTimeout(() => {
+  render(nextVNode, document.getElementById('app'))
+}, 2000)

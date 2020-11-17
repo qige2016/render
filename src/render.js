@@ -348,11 +348,23 @@ function patchChildren(
           break
         default:
           // 但新的 children 中有多个子节点时，会执行该 case 语句块
-          for (let i = 0; i < prevChildren.length; i++) {
-            container.removeChild(prevChildren[i].el)
+          // 获取公共长度，取新旧 children 长度较小的那一个
+          const prevLen = prevChildren.length
+          const nextLen = nextChildren.length
+          const commonLength = prevLen > nextLen ? nextLen : prevLen
+          for (let i = 0; i < commonLength; i++) {
+            patch(prevChildren[i], nextChildren[i], container)
           }
-          for (let i = 0; i < nextChildren.length; i++) {
-            mount(nextChildren[i], container)
+          // 如果 nextLen > prevLen，将多出来的元素添加
+          if (nextLen > prevLen) {
+            for (let i = commonLength; i < nextLen; i++) {
+              mount(nextChildren[i], container)
+            }
+          } else if (prevLen > nextLen) {
+            // 如果 prevLen > nextLen，将多出来的元素添加
+            for (let i = commonLength; i < prevLen; i++) {
+              container.removeChild(prevChildren[i].el)
+            }
           }
           break
       }
