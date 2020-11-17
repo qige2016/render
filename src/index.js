@@ -5,14 +5,16 @@ import render from './render'
 const prevVNode = h('div', null, [
   h('p', { key: 'a' }, '节点1'),
   h('p', { key: 'b' }, '节点2'),
-  h('p', { key: 'c' }, '节点3')
+  h('p', { key: 'c' }, '节点3'),
+  h('p', { key: 'd' }, '节点4')
 ])
 
 // 新的 VNode
 const nextVNode = h('div', null, [
-  h('p', { key: 'c' }, '节点3'),
+  h('p', { key: 'b' }, '节点2'),
+  h('p', { key: 'd' }, '节点4'),
   h('p', { key: 'a' }, '节点1'),
-  h('p', { key: 'b' }, '节点2')
+  h('p', { key: 'c' }, '节点3')
 ])
 
 render(prevVNode, document.getElementById('app'))

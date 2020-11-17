@@ -358,40 +358,48 @@ function patchChildren(
           let newEndVNode = nextChildren[newEndIdx]
 
           while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-            if (oldStartVNode.key === newStartVNode.key) {
-            // 步骤一：oldStartVNode 和 newStartVNode 比对
-              // 调用 patch 函数更新
+            // 当 oldStartVNode 或 oldEndVNode 不存在时，说明该节点已经被移动了，我们只需要跳过该位置即可
+            if (!oldStartVNode) {
+              oldStartVNode = prevChildren[++oldStartIdx]
+            } else if (!oldEndVNode) {
+              oldEndVNode = prevChildren[--oldEndIdx]
+            } else if (oldStartVNode.key === newStartVNode.key) {
               patch(oldStartVNode, newStartVNode, container)
-              // 更新索引，指向下一个位置
               oldStartVNode = prevChildren[++oldStartIdx]
               newStartVNode = nextChildren[++newStartIdx]
             } else if (oldEndVNode.key === newEndVNode.key) {
-            // 步骤二：oldEndVNode 和 newEndVNode 比对
-              // 调用 patch 函数更新
               patch(oldEndVNode, newEndVNode, container)
-              // 更新索引，指向下一个位置
               oldEndVNode = prevChildren[--oldEndIdx]
-              newEndVNode = newEndVNode[--newEndIdx]
+              newEndVNode = nextChildren[--newEndIdx]
             } else if (oldStartVNode.key === newEndVNode.key) {
-            // 步骤三：oldStartVNode 和 newEndVNode 比对
-              // 调用 patch 函数更新
               patch(oldStartVNode, newEndVNode, container)
-              // 将 oldStartVNode.el 移动到 oldEndVNode.el 的后面，也就是 oldEndVNode.el.nextSibling 的前面
               container.insertBefore(
                 oldStartVNode.el,
                 oldEndVNode.el.nextSibling
               )
-              // 更新索引，指向下一个位置
               oldStartVNode = prevChildren[++oldStartIdx]
               newEndVNode = nextChildren[--newEndIdx]
             } else if (oldEndVNode.key === newStartVNode.key) {
-            // 步骤四：oldEndVNode 和 newStartVNode 比对
-              // 先调用 patch 函数完成更新
               patch(oldEndVNode, newStartVNode, container)
-              // 更新完成后，将容器中最后一个子节点移动到最前面，使其成为第一个子节点
               container.insertBefore(oldEndVNode.el, oldStartVNode.el)
-              // 更新索引，指向下一个位置
               oldEndVNode = prevChildren[--oldEndIdx]
+              newStartVNode = nextChildren[++newStartIdx]
+            } else {
+              // 遍历旧 children，试图寻找与 newStartVNode 拥有相同 key 值的元素
+              const idxInOld = prevChildren.findIndex(
+                node => node.key === newStartVNode.key
+              )
+              if (idxInOld >= 0) {
+                // vnodeToMove 就是在旧 children 中找到的节点，该节点所对应的真实 DOM 应该被移动到最前面
+                const vnodeToMove = prevChildren[idxInOld]
+                // 调用 patch 函数完成更新
+                patch(vnodeToMove, newStartVNode, container)
+                // 由于旧 children 中该位置的节点所对应的真实 DOM 已经被移动，所以将其设置为 undefined
+                prevChildren[idxInOld] = undefined
+                 // 把 vnodeToMove.el 移动到最前面，即 oldStartVNode.el 的前面
+                container.insertBefore(vnodeToMove.el, oldStartVNode.el)
+              }
+              // 将 newStartIdx 下移一位
               newStartVNode = nextChildren[++newStartIdx]
             }
           }
