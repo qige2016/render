@@ -401,6 +401,72 @@ function patchChildren(
             while (j <= prevEnd) {
               container.removeChild(prevChildren[j++].el)
             }
+          } else {
+            // 构造 source 数组
+            const nextLeft = nextEnd - j + 1 // 新 children 中剩余未处理节点的数量
+            const source = []
+            for (let i = 0; i < nextLeft; i++) {
+              source.push(-1)
+            }
+
+            const prevStart = j
+            const nextStart = j
+            let moved = false
+            let pos = 0
+            // for (let i = prevStart; i <= prevEnd; i++) {
+            //   const prevVNode = prevChildren[i]
+            //   for (let k = nextStart; k <= nextEnd; k++) {
+            //     const nextVNode = nextChildren[k]
+            //     if (prevVNode.key === nextVNode.key) {
+            //       // patch 更新
+            //       patch(prevVNode, nextVNode, container)
+            //       // 更新 source 数组
+            //       source[k - nextStart] = i
+            //       // 判断是否需要移动
+            //       if (k < pos) {
+            //         moved = true
+            //       } else {
+            //         pos = k
+            //       }
+            //     }
+            //   }
+            // }
+
+            // 构建索引表
+            const keyIndex = {}
+            for (let i = nextStart; i <= nextEnd; i++) {
+              keyIndex[nextChildren[i].key] = i
+            }
+            let patched = 0
+            // 遍历旧 children 的剩余未处理节点
+            for (let i = prevStart; i <= prevEnd; i++) {
+              prevVNode = prevChildren[i]
+
+              if (patched < nextLeft) {
+                // 通过索引表快速找到新 children 中具有相同 key 的节点的位置
+                const k = keyIndex[prevVNode.key]
+                if (typeof k !== 'undefined') {
+                  nextVNode = nextChildren[k]
+                  // patch 更新
+                  patch(prevVNode, nextVNode, container)
+                  patched++
+                  // 更新 source 数组
+                  source[k - nextStart] = i
+                  // 判断是否需要移动
+                  if (k < pos) {
+                    moved = true
+                  } else {
+                    pos = k
+                  }
+                } else {
+                  // 没找到，说明旧节点在新 children 中已经不存在了，应该移除
+                  container.removeChild(prevVNode.el)
+                }
+              } else {
+                // 多余的节点，应该移除
+                container.removeChild(prevVNode.el)
+              }
+            }
           }
           break
       }
