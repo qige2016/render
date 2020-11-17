@@ -348,55 +348,51 @@ function patchChildren(
           break
         default:
           // 但新的 children 中有多个子节点时，会执行该 case 语句块
-          // 用来存储寻找过程中遇到的最大索引值
-          let lastIndex = 0
-          // 遍历新的 children
-          for (let i = 0; i < nextChildren.length; i++) {
-            const nextVNode = nextChildren[i]
-            let j = 0,
-            // 新 children 中的节点是否存在于旧 children 中
-            find = false
-            // 遍历旧的 children
-            for (j; j < prevChildren.length; j++) {
-              const prevVNode = prevChildren[j]
-              // 如果找到了具有相同 key 值的两个节点，则调用 `patch` 函数更新之
-              if (nextVNode.key === prevVNode.key) {
-                find = true
-                patch(prevVNode, nextVNode, container)
-                if (j < lastIndex) {
-                  // 需要移动
-                  // refNode 是为了下面调用 insertBefore 函数准备的
-                  const refNode = nextChildren[i - 1].el.nextSibling
-                  // 调用 insertBefore 函数移动 DOM
-                  container.insertBefore(prevVNode.el, refNode)
-                  break
-                } else {
-                  // 更新 lastIndex
-                  lastIndex = j
-                }
-              }
-            }
-            if (!find) {
-              // 挂载新节点
-              // 找到 refNode
-              const refNode =
-                i - 1 < 0
-                  // 新的节点是作为第一个节点,只需要把新的节点插入到最前面即可
-                  ? prevChildren[0].el
-                  : nextChildren[i - 1].el.nextSibling
-              mount(nextVNode, container, false, refNode)
-            }
-            // 移除已经不存在的节点
-            for (let i = 0; i < prevChildren.length; i++) {
-              const prevVNode = prevChildren[i]
-              // 拿着旧 VNode 去新 children 中寻找相同的节点
-              const has = nextChildren.find(
-                nextVNode => nextVNode.key === prevVNode.key
+          let oldStartIdx = 0
+          let oldEndIdx = prevChildren.length - 1
+          let newStartIdx = 0
+          let newEndIdx = nextChildren.length - 1
+          let oldStartVNode = prevChildren[oldStartIdx]
+          let oldEndVNode = prevChildren[oldEndIdx]
+          let newStartVNode = nextChildren[newStartIdx]
+          let newEndVNode = nextChildren[newEndIdx]
+
+          while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+            if (oldStartVNode.key === newStartVNode.key) {
+            // 步骤一：oldStartVNode 和 newStartVNode 比对
+              // 调用 patch 函数更新
+              patch(oldStartVNode, newStartVNode, container)
+              // 更新索引，指向下一个位置
+              oldStartVNode = prevChildren[++oldStartIdx]
+              newStartVNode = nextChildren[++newStartIdx]
+            } else if (oldEndVNode.key === newEndVNode.key) {
+            // 步骤二：oldEndVNode 和 newEndVNode 比对
+              // 调用 patch 函数更新
+              patch(oldEndVNode, newEndVNode, container)
+              // 更新索引，指向下一个位置
+              oldEndVNode = prevChildren[--oldEndIdx]
+              newEndVNode = newEndVNode[--newEndIdx]
+            } else if (oldStartVNode.key === newEndVNode.key) {
+            // 步骤三：oldStartVNode 和 newEndVNode 比对
+              // 调用 patch 函数更新
+              patch(oldStartVNode, newEndVNode, container)
+              // 将 oldStartVNode.el 移动到 oldEndVNode.el 的后面，也就是 oldEndVNode.el.nextSibling 的前面
+              container.insertBefore(
+                oldStartVNode.el,
+                oldEndVNode.el.nextSibling
               )
-              if (!has) {
-                // 如果没有找到相同的节点，则移除
-                container.removeChild(prevVNode.el)
-              }
+              // 更新索引，指向下一个位置
+              oldStartVNode = prevChildren[++oldStartIdx]
+              newEndVNode = nextChildren[--newEndIdx]
+            } else if (oldEndVNode.key === newStartVNode.key) {
+            // 步骤四：oldEndVNode 和 newStartVNode 比对
+              // 先调用 patch 函数完成更新
+              patch(oldEndVNode, newStartVNode, container)
+              // 更新完成后，将容器中最后一个子节点移动到最前面，使其成为第一个子节点
+              container.insertBefore(oldEndVNode.el, oldStartVNode.el)
+              // 更新索引，指向下一个位置
+              oldEndVNode = prevChildren[--oldEndIdx]
+              newStartVNode = nextChildren[++newStartIdx]
             }
           }
           break
